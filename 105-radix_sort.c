@@ -1,89 +1,68 @@
 #include "sort.h"
-#include <stdio.h>
 /**
-* getMax - A utility function to get maximum value in arr[]
-* @arr: array
-* @n: size of the array
-* Return: array
-*/
-int getMax(int *arr, int n)
+ * max_val - gets max value from array
+ * @array: pointer to array
+ * @size: size of the array
+ * Return: max value from array
+ */
+int max_val(int *array, size_t size)
 {
-	int i, max = arr[0];
+	int max = array[0];
+	size_t i;
 
-	for (i = 1; i < n; i++)
-		if (arr[i] > max)
-			max = arr[i];
+	for (i = 0; i < size; i++)
+	{
+		if (array[i] > max)
+			max = array[i];
+	}
 	return (max);
 }
-
 /**
-* countSort - A function to do counting sort of arr[] according to
-* the digit represented by exp.
-* @arr: array
-* @n: size of the array
-* @exp: exp is 10^i
-* @output: array to save the temporary values
-*/
-void countSort(int *arr, size_t n, int exp, int *output)
-{
-	int i;
-	int count[10] = {0};
-
-	/* Store count of occurrences in count[] */
-	for (i = 0; i < (int)n; i++)
-		count[(arr[i] / exp) % 10]++;
-
-	/*
-	* Change count[i] so that count[i] now contains actual
-    * position of this digit in output[]
-	*/
-	for (i = 1; i < 10; i++)
-		count[i] += count[i - 1];
-
-	/* Build the output array */
-	for (i = n - 1; i >= 0; i--)
-	{
-		output[count[(arr[i] / exp) % 10] - 1] = arr[i];
-		count[(arr[i] / exp) % 10]--;
-	}
-
-	/*
-	* Copy the output array to arr[], so that arr[] now
-    * contains sorted numbers according to current digit
-	*/
-	for (i = 0; i < (int)n; i++)
-		arr[i] = output[i];
-	/*print_array(arr, n);*/
-}
-
-/**
-* radix_sort - The main function to that sorts arr[]
-* of size n using Radix Sort
-* @array: array
-* @size: size of the array
-*/
+ * radix_sort - sorts an array of integers is ASC
+ * order implementing Radix Sort algorithm
+ * @array: pointer to array
+ * @size: size of the array
+ */
 void radix_sort(int *array, size_t size)
 {
-	/* Find the maximum number to know number of digits */
-	int exp, maximum = 0;
-	int *output = '\0'; /* output array should be n(size) */
+	int *new_arr;
+	int i, max, e = 1;
+	int tam = size;
 
-	if (array == '\0' || size < 2)
+	if (!array || size < 2)
 		return;
 
-	maximum = getMax(array, size);
-	output = malloc(size * sizeof(int));
-	if (output == '\0')
-		return;
-	/*
-	* Do counting sort for every digit. Note that instead
-    * of passing digit number, exp is passed. exp is 10^i
-    * where i is current digit number
-	*/
-	for (exp = 1; maximum / exp > 0; exp *= 10)
+	max = max_val(array, size);
+
+	new_arr = malloc(sizeof(int) * size);
+	while (max / e > 0)
 	{
-		countSort(array, size, exp, output);
+		int brews[20] = {0};
+
+		i = 0;
+
+		while (i < tam)
+		{
+			brews[(array[i] / e) % 10]++;
+			i++;
+		}
+
+		if (brews != NULL)
+		{
+			for (i = 1; i < 10; i++)
+				brews[i] += brews[i - 1];
+
+			for (i = tam - 1; i >= 0; i--)
+			{
+				new_arr[brews[(array[i] / e) % 10] - 1] = array[i];
+				brews[(array[i] / e) % 10]--;
+			}
+
+			for (i = 0; i < tam; i++)
+				array[i] = new_arr[i];
+		}
+		e *= 10;
 		print_array(array, size);
 	}
-	free(output);
+	free(new_arr);
 }
