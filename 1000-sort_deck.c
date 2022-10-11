@@ -1,114 +1,131 @@
 #include "deck.h"
-#include <stdio.h>
 /**
- *_strcmp - compare two strings
- *@str1: string
- *@str2: string
- *Return: 1 str1 and str2 is equal, 0 they are not equal
- */
-int _strcmp(const char *str1, char *str2)
+ * aux_num_fun - turn into integer card value
+ * @head_tmp1: pointer to the list
+ * Return: integer rep
+ **/
+int aux_num_fun(deck_node_t *head_tmp1)
 {
-	size_t i = 0;
+	int aux_num, j;
+	int num[13] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
+	char val[13] = {'A', '2', '3', '4', '5', '6', '7',
+		'8', '9', '1', 'J', 'Q', 'K'};
 
-	if (str1 == '\0')
-		return (0);
-	while (str1[i])
+	for (j = 0; j < 13; j++)
 	{
-		if (str1[i] != str2[i])
-			return (0);
-		i++;
+		if (head_tmp1->card->value[0] == val[j])
+			aux_num = num[j];
 	}
-	if (str1[i] == '\0' && str2[i])
-		return (0);
-	return (1);
+
+	return (aux_num);
 }
 /**
- * get_card_position - return the position based on card you put in
- * @node: represent the card
- * Return: return the card position
- */
-int get_card_position(deck_node_t *node)
+ * num_sort - sorts a doubly linked list of integers, 4 stages
+ * @list: pointer to the list head
+ * Return: no return
+ **/
+void num_sort(deck_node_t **list)
 {
-	int value;
+	deck_node_t *head_tmp1, *head_tmp2, *aux1, *aux2;
+	int flag = 0, i, aux_num1, aux_num2;
+	unsigned int k;
 
-	value = (*node).card->value[0] - '0';
-	if (value < 50 || value > 57)
-	{
-		if (_strcmp((*node).card->value, "Ace") == 1)
-			value = 1;
-		else if (_strcmp((*node).card->value, "10") == 1)
-			value = 10;
-		else if (_strcmp((*node).card->value, "Jack") == 1)
-			value = 11;
-		else if (_strcmp((*node).card->value, "Queen") == 1)
-			value = 12;
-		else if (_strcmp((*node).card->value, "King") == 1)
-			value = 13;
-	}
-	value += (*node).card->kind * 13;
-	return (value);
-}
-/**
- *swap_card - swap a card for his previous one
- *@card: card
- *@deck: card deck
- *Return: return a pointer to a card which was enter it
- */
-deck_node_t *swap_card(deck_node_t *card, deck_node_t **deck)
-{
-	deck_node_t *back = card->prev, *current = card;
-	/*NULL, 19, 48, 9, 71, 13, NULL*/
-
-	back->next = current->next;
-	if (current->next)
-		current->next->prev = back;
-	current->next = back;
-	current->prev = back->prev;
-	back->prev = current;
-	if (current->prev)
-		current->prev->next = current;
-	else
-		*deck = current;
-	return (current);
-}
-
-/**
- * insertion_sort_deck - function that sorts a doubly linked deck
- * of integers in ascending order using the Insertion sort algorithm
- * @deck: Dobule linked deck to sort
- */
-void insertion_sort_deck(deck_node_t **deck)
-{
-	int value_prev, value_current;
-	deck_node_t *node;
-
-	if (deck == NULL || (*deck)->next == NULL)
-		return;
-	node = (*deck)->next;
-	while (node)
-	{
-		/* preparing the previous value */
-		if (node->prev)
+	head_tmp1 = *list;
+	head_tmp2 = *list;
+	for (i = 0; i < 4; i++)
+	{ k =  head_tmp1->card->kind;
+		while (head_tmp1->next && head_tmp1->next->card->kind == k)
 		{
-			value_prev = get_card_position((node->prev));
-			value_current = get_card_position(node);
+			aux_num1 = aux_num_fun(head_tmp1);
+			aux_num2 = aux_num_fun(head_tmp1->next);
+			flag = 0;
+			head_tmp2 = head_tmp1;
+			while (head_tmp2 && head_tmp2->card->kind == k && aux_num1 > aux_num2)
+			{
+				aux1 = head_tmp2;
+				aux2 = head_tmp2->next;
+				aux1->next = aux2->next;
+				if (aux2->next)
+					aux2->next->prev = aux1;
+				aux2->prev = aux1->prev;
+				aux2->next = aux1;
+				aux1->prev = aux2;
+				if (aux2->prev)
+					aux2->prev->next = aux2;
+				head_tmp2 = aux2->prev;
+				if (!aux2->prev)
+					*list = aux2;
+				flag = 1;
+				if (!head_tmp2)
+					break;
+				aux_num1 = aux_num_fun(head_tmp2);
+				aux_num2 = aux_num_fun(head_tmp2->next);
+			}
+			if (flag == 0)
+				head_tmp1 = head_tmp1->next;
 		}
-		while ((node->prev) && (value_prev > value_current))
-		{
-			value_prev = get_card_position((node->prev));
-			value_current = get_card_position(node);
-			node = swap_card(node, deck);
-
-		}
-		node = node->next;
+		head_tmp1 = head_tmp1->next;
 	}
 }
 /**
- * sort_deck - sort a deck you put in using
- * insertion sort algorithm
- * @deck: deck
- */
+ * kind_sort - sorts a doubly linked list of integers
+ * in ascending order using the Insertion sort ailgorithm
+ * @list: pointer to the list head
+ * Return: no return
+ **/
+void kind_sort(deck_node_t **list)
+{
+	deck_node_t *head_tmp1, *head_tmp2, *aux1, *aux2;
+	int flag;
+
+	if (list)
+	{
+		head_tmp1 = *list;
+		head_tmp2 = *list;
+		while (list && head_tmp1->next)
+		{
+			if (head_tmp1->next)
+			{
+				flag = 0;
+				head_tmp2 = head_tmp1;
+				while (head_tmp2 && head_tmp2->card->kind > head_tmp2->next->card->kind)
+				{
+					aux1 = head_tmp2;
+					aux2 = head_tmp2->next;
+					aux1->next = aux2->next;
+					if (aux2->next)
+						aux2->next->prev = aux1;
+					if (aux2)
+					{
+						aux2->prev = aux1->prev;
+						aux2->next = aux1;
+					}
+					if (aux1)
+						aux1->prev = aux2;
+					if (aux2->prev)
+						aux2->prev->next = aux2;
+					head_tmp2 = aux2->prev;
+					if (!aux2->prev)
+						*list = aux2;
+					flag = 1;
+				}
+			}
+			if (flag == 0)
+				head_tmp1 = head_tmp1->next;
+		}
+	}
+}
+/**
+ * sort_deck - sorts a deck of cards
+ * @deck: ponter to the deck
+ * Return: no return
+ *
+ **/
 void sort_deck(deck_node_t **deck)
 {
-	insertion_sort_deck(deck);
+	if (deck)
+	{
+		kind_sort(deck);
+		num_sort(deck);
+	}
 }
